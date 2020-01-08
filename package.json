@@ -1,0 +1,27 @@
+{
+  "name": "telegramtriviabot",
+  "version": "1.0.0",
+  "description": "Bot to play trivia questions on telegram",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuisMayo/TelegramTriviaBot.git"
+  },
+  "keywords": [
+    "telegram",
+    "trivia",
+    "bot"
+  ],
+  "author": "Luis Mayo",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/LuisMayo/TelegramTriviaBot/issues"
+  },
+  "homepage": "https://github.com/LuisMayo/TelegramTriviaBot#readme",
+  "dependencies": {
+    "telegraf": "^3.35.0"
+  }
+}

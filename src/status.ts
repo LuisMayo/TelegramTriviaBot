@@ -1,4 +1,5 @@
 export enum Status {
+    INIT,
     CONFIG1,
     CONFIG2,
     CONFIG3,

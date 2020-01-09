@@ -1,0 +1,13 @@
+{
+    "token": "YOUR-TG-TOKEN",
+    "adminChat": "YOUR-ADMINISTRATION-CHAT",
+    "extendedLog": false,
+    "messages": {
+        "start": "Message"
+    },
+    "default": {
+        "totalQuestions": 10,
+        "typeOfQuestions": null,
+        "difficulty": null
+    }
+}

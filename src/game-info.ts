@@ -23,8 +23,12 @@ export class GameInfo {
     }
 
     isPlayerAdmin(id: number) {
-        const savedPlayer = this.players.find(player => player.id === id);
+        const savedPlayer = this.findPlayerByID(id);
         return savedPlayer && savedPlayer.gameAdmin;
+    }
+
+    findPlayerByID(id: number) {
+        return this.players.find(player => player.id === id);
     }
 
     printPlayerStats() {
@@ -34,6 +38,14 @@ export class GameInfo {
         let string = '';
         for (const player of this.players) {
             string += player.getStats() + '\n';
+        }
+        return string;
+    }
+
+    printAllPlayers() {
+        let string = '';
+        for (const player of this.players) {
+            string += player.getPlayerLink() + '\n';
         }
         return string;
     }

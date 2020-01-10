@@ -4,6 +4,7 @@ import * as Telegraf from 'telegraf';
 import { GameInfo } from "./game-info";
 import { Status } from "./status";
 import { Question, Answer } from "./question";
+import { Player } from "./player";
 
 const version = '1.0.0';
 const confPath = process.argv[2] || './conf';
@@ -29,6 +30,21 @@ bot.command(['create', 'init'], ctx => {
     }
 });
 
+bot.command('join', ctx => {
+    if (stateMap.has(ctx.chat.id)) {
+        const state = stateMap.get(ctx.chat.id);
+        if (state.findPlayerByID(ctx.from.id)) {
+            ctx.reply('Player is already in game');
+        } else {
+            const player = new Player(ctx.from);
+            state.players.push(player);
+            ctx.reply('Player ' + player.getPlayerLink() + 'has joined the game\nPlayer List:\n' + state.printAllPlayers(), {parse_mode: "Markdown"});
+        }
+    } else {
+        ctx.reply('There is no game in progress. You may want to use /create to make one');
+    }
+});
+
 bot.command('/cancel', ctx => {
     if(stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id)) {
         ctx.reply('Game ended prematurely\n' + stateMap.get(ctx.chat.id).printStats())
@@ -50,7 +66,7 @@ function serveNextQuestionOrEndGame(state: GameInfo) {
         } else {
             state.currentQuestion++;
             const question = state.questionArray[state.currentQuestion];
-            bot.telegram.sendMessage(state.chatID,'Question!\nCategory:' + question.category);
+            bot.telegram.sendMessage(state.chatID,'Question!\nCategory:' + question.category + '\n' + question.text, {reply_markup: makeAnswerKeyboard(question.answers, state.currentQuestion)});
         }
     }
 }

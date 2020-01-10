@@ -17,6 +17,10 @@ export class Player implements User {
         this.stats = new PlayerStats()
     }
     getStats() {
-        return `[${this.first_name}](tg://user?id=${this.id}): ${this.stats.getStats()}`
+        return `(${this.getPlayerLink()}): ${this.stats.getStats()}`
+    }
+
+    getPlayerLink() {
+        return `${this.first_name}](tg://user?id=${this.id}`;
     }
 }

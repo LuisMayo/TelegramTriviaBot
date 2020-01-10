@@ -10,6 +10,7 @@ export class Player implements User {
     username?: string;
     language_code?: string;
     stats: PlayerStats;
+    lastAnswer: number;
     constructor(user: User, admin = false) {
         Object.assign(this, user);
         this.gameAdmin = admin;

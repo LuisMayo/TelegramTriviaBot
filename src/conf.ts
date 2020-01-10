@@ -1,3 +1,9 @@
+export type GameConfig = {
+    totalQuestions: number;
+    typeOfQuestions: QuestionsType;
+    difficulty: Difficulty;
+};
+
 export type Conf = {
     token: string;
     adminChat: string;
@@ -5,21 +11,18 @@ export type Conf = {
     messages: {
         start: string;
     },
-    default: {
-        totalQuestions: number;
-        typeOfQuestions: QuestionsType;
-        difficulty: Difficulty
-    }
+    default: GameConfig
 };
 
-export type QuestionsType = {
-    ALL: null,
-    SIMPLE: 'boolean',
-    MULTIPLE: 'multiple'
+export enum QuestionsType {
+    ALL = '',
+    SIMPLE = 'boolean',
+    MULTIPLE = 'multiple',
+    FREE = 'free'
 }
 
-export type Difficulty = {
-    EASY: 'easy',
-    MEDIUM: 'medium',
-    HARD: 'hard'
+export enum Difficulty {
+    EASY = 'easy',
+    MEDIUM = 'medium',
+    HARD = 'hard'
 }

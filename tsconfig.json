@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "outDir": "./build",
-    "sourceMap": true
+    "sourceMap": true,
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*", "web"]
+  "exclude": ["node_modules", "**/__tests__/*", "web"],
 }

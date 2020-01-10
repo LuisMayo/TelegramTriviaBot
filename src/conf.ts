@@ -2,6 +2,8 @@ export type GameConfig = {
     totalQuestions: number;
     typeOfQuestions: QuestionsType;
     difficulty: Difficulty;
+    timeout: number;
+    ausence_tolerance: number;
 };
 
 export type Conf = {

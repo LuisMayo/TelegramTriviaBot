@@ -11,10 +11,14 @@ export class Player implements User {
     language_code?: string;
     stats: PlayerStats;
     lastAnswer: number;
-    constructor(user: User, admin = false) {
+    consecutiveAusences: number;
+    constructor(user: User, admin = false, unanswered = 0) {
         Object.assign(this, user);
         this.gameAdmin = admin;
-        this.stats = new PlayerStats()
+        this.lastAnswer = null;
+        this.consecutiveAusences = 0;
+        this.stats = new PlayerStats();
+        this.stats.unanswered = unanswered;
     }
     getStats() {
         return `(${this.getPlayerLink()}): ${this.stats.getStats()}`

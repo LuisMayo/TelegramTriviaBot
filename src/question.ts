@@ -9,6 +9,10 @@ export class Question {
     text: string;
     number: number;
 
+    getCorrectAnswer() {
+        return this.answers.find(answer => answer.isCorrect);
+    }
+
     isAnswerCorrect(id: number) {
         return this.answers[id].isCorrect;
     }

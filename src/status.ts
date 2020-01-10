@@ -8,5 +8,6 @@ export enum Status {
     CONFIG6,
     PLAYING,
     PAUSED,
-    STATS
+    STATS,
+    PENDING
 }

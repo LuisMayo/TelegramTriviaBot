@@ -26,6 +26,7 @@
     "telegraf": "^3.35.0"
   },
   "devDependencies": {
-    "@types/knuth-shuffle": "^1.0.0"
+    "@types/knuth-shuffle": "^1.0.0",
+    "@types/node": "^13.1.6"
   }
 }

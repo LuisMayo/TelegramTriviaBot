@@ -21,7 +21,7 @@ export class Player implements User {
         this.stats.unanswered = unanswered;
     }
     getStats() {
-        return `(${this.getPlayerLink()}): ${this.stats.getStats()}`
+        return `${this.getPlayerLink()}: ${this.stats.getStats()}`
     }
 
     getPlayerLink() {

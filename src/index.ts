@@ -69,9 +69,9 @@ bot.command('launch', ctx => {
 });
 
 bot.command('leave', ctx => {
-     if (stateMap.has(ctx.chat.id)) {
+    if (stateMap.has(ctx.chat.id)) {
         kickPlayer(ctx.from.id, stateMap.get(ctx.chat.id));
-     }
+    }
 });
 
 bot.action('yes', ctx => {
@@ -103,20 +103,24 @@ bot.action('no', ctx => {
 
 bot.action(/q\d+:\d+/, ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).state === Status.PLAYING) {
-        const state = stateMap.get(ctx.chat.id);
         const cbQuery = ctx.callbackQuery.data;
-        const player = state.findPlayerByID(ctx.from.id);
-        if (player) {
-            player.lastAnswer = +cbQuery.substring(cbQuery.indexOf(':') + 1);
-            if (state.haveAllPlayersAnswered()) {
-                clearTimeout(state.lastTimeOutID);
-                endQuestion(state, false);
+        const state = stateMap.get(ctx.chat.id);
+        if (+cbQuery.substring(1, cbQuery.indexOf(':')) === state.currentQuestion) {
+            const player = state.findPlayerByID(ctx.from.id);
+            if (player) {
+                player.lastAnswer = +cbQuery.substring(cbQuery.indexOf(':') + 1);
+                if (state.haveAllPlayersAnswered()) {
+                    clearTimeout(state.lastTimeOutID);
+                    endQuestion(state, false);
+                }
+                ctx.answerCbQuery('Response registered');
+            } else {
+                ctx.reply(`I'm terribly sorry ${ctx.from.first_name}](tg://user?id=${ctx.from.id}) but you're not on this game. You may join with /join`,
+                    { parse_mode: "Markdown", reply_to_message_id: ctx.message.message_id });
+                ctx.answerCbQuery();
             }
-            ctx.answerCbQuery('Response registered');
         } else {
-            ctx.reply(`I'm terribly sorry ${ctx.from.first_name}](tg://user?id=${ctx.from.id}) but you're not on this game. You may join with /join`,
-                { parse_mode: "Markdown", reply_to_message_id: ctx.message.message_id });
-            ctx.answerCbQuery();
+            ctx.answerCbQuery('That question has already finished');
         }
     } else {
         ctx.answerCbQuery();
@@ -126,7 +130,7 @@ bot.action(/q\d+:\d+/, ctx => {
 bot.launch();
 
 function endGamePrematurely(state: GameInfo) {
-    bot.telegram.sendMessage(state.chatID, 'Game ended prematurely\n' + state.printStats(), {parse_mode: "Markdown"});
+    bot.telegram.sendMessage(state.chatID, 'Game ended prematurely\n' + state.printStats(), { parse_mode: "Markdown" });
     clearTimeout(state.lastTimeOutID);
     stateMap.delete(state.chatID);
 }
@@ -134,7 +138,7 @@ function endGamePrematurely(state: GameInfo) {
 function endQuestion(state: GameInfo, timeOut: boolean) {
     let resume = true;
     const message = state.resolveQuestion(timeOut);
-    bot.telegram.sendMessage(state.chatID, message, {parse_mode: "Markdown"}).finally(() => {
+    bot.telegram.sendMessage(state.chatID, message, { parse_mode: "Markdown" }).finally(() => {
         for (const player of state.players) {
             if (player.consecutiveAusences >= state.gameConfig.ausence_tolerance) {
                 resume = kickPlayer(player.id, state);
@@ -155,7 +159,7 @@ function endQuestion(state: GameInfo, timeOut: boolean) {
 function kickPlayer(playerID: number, state: GameInfo): boolean {
     const player = state.findPlayerByID(playerID);
     bot.telegram.sendMessage(state.chatID, `Player ${player.getPlayerLink()} kicked due to inactivity`,
-    {parse_mode: "Markdown"});
+        { parse_mode: "Markdown" });
     state.removePlayerFromID(playerID);
     if (state.players.length === 0) {
         endGamePrematurely(state)

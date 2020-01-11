@@ -149,7 +149,7 @@ function endGamePrematurely(state: GameInfo) {
 function endQuestion(state: GameInfo, timeOut: boolean) {
     let resume = true;
     const message = state.resolveQuestion(timeOut);
-    bot.telegram.sendMessage(state.chatID, message, { parse_mode: "Markdown" }).finally(() => {
+    bot.telegram.sendMessage(state.chatID, message, { parse_mode: "Markdown" }).then(() => {
         for (const player of state.players) {
             if (player.consecutiveAusences >= state.gameConfig.ausence_tolerance) {
                 resume = kickPlayer(player.id, state);

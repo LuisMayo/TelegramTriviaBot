@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/LuisMayo/TelegramTriviaBot#readme",
   "dependencies": {
+    "cross-fetch": "^3.0.4",
     "knuth-shuffle": "^1.0.8",
     "telegraf": "^3.35.0"
   },

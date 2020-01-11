@@ -40,7 +40,10 @@ bot.command('join', ctx => {
         } else {
             const player = new Player(ctx.from);
             state.players.push(player);
-            ctx.reply('Player ' + player.getPlayerLink() + 'has joined the game\nPlayer List:\n' + state.printAllPlayers(), { parse_mode: "Markdown" });
+            ctx.reply('Player ' + player.getPlayerLink() + ' has joined the game\nPlayer List:\n' + state.printAllPlayers(), { parse_mode: "Markdown" });
+            if (state.state === Status.PLAYING) {
+                player.stats.unanswered = state.currentQuestion;
+            }
         }
     } else {
         ctx.reply('There is no game in progress. You may want to use /create to make one');
@@ -49,9 +52,26 @@ bot.command('join', ctx => {
 
 bot.command(['/cancel', '/stop'], ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id)) {
-        ctx.reply('Game ended prematurely\n' + stateMap.get(ctx.chat.id).printStats())
-        stateMap.delete(ctx.chat.id);
+        endGamePrematurely(stateMap.get(ctx.chat.id));
     }
+});
+
+bot.command('launch', ctx => {
+    if (stateMap.has(ctx.chat.id)) {
+        const state = stateMap.get(ctx.chat.id);
+        if (state.state === Status.PAUSED) {
+            state.state = Status.PLAYING;
+            serveNextQuestionOrEndGame(state);
+        } else if (state.state === Status.PENDING) {
+            state.pendingStart = true;
+        }
+    }
+});
+
+bot.command('leave', ctx => {
+     if (stateMap.has(ctx.chat.id)) {
+        kickPlayer(ctx.from.id, stateMap.get(ctx.chat.id));
+     }
 });
 
 bot.action('yes', ctx => {
@@ -63,7 +83,11 @@ bot.action('yes', ctx => {
         const provider = ProviderFactory.getProvider(ProviderList.TRIVIADB);
         provider.getQuestions(state.gameConfig).then(
             data => {
-                
+                state.setQuestions(data);
+                if (state.pendingStart) {
+                    serveNextQuestionOrEndGame(state);
+                }
+                state.state = Status.PAUSED;
             }
         )
         ctx.answerCbQuery();
@@ -87,8 +111,8 @@ bot.action(/q\d+:\d+/, ctx => {
             if (state.haveAllPlayersAnswered()) {
                 clearTimeout(state.lastTimeOutID);
                 endQuestion(state, false);
-                ctx.answerCbQuery('Response registered');
             }
+            ctx.answerCbQuery('Response registered');
         } else {
             ctx.reply(`I'm terribly sorry ${ctx.from.first_name}](tg://user?id=${ctx.from.id}) but you're not on this game. You may join with /join`,
                 { parse_mode: "Markdown", reply_to_message_id: ctx.message.message_id });
@@ -99,27 +123,67 @@ bot.action(/q\d+:\d+/, ctx => {
     }
 });
 
+bot.launch();
+
+function endGamePrematurely(state: GameInfo) {
+    bot.telegram.sendMessage(state.chatID, 'Game ended prematurely\n' + state.printStats(), {parse_mode: "Markdown"});
+    clearTimeout(state.lastTimeOutID);
+    stateMap.delete(state.chatID);
+}
+
 function endQuestion(state: GameInfo, timeOut: boolean) {
+    let resume = true;
     const message = state.resolveQuestion(timeOut);
-    bot.telegram.sendMessage(state.chatID, message, {parse_mode: "Markdown"});
-    serveNextQuestionOrEndGame(state);
-}
-
-
-function serveNextQuestionOrEndGame(state: GameInfo) {
-    if (state.state === Status.PLAYING) {
-        if (state.currentQuestion === state.currentQuestion + 1) {
-            bot.telegram.sendMessage(state.chatID, 'Game end!\n' + state.printStats(), { parse_mode: "Markdown" });
-            stateMap.delete(state.chatID);
-        } else {
-            state.currentQuestion++;
-            const question = state.questionArray[state.currentQuestion];
-            bot.telegram.sendMessage(state.chatID, 'Question!\nCategory:' + question.category + '\n' + question.text, { reply_markup: makeAnswerKeyboard(question.answers, state.currentQuestion) });
-            state.lastTimeOutID = setTimeout(endQuestion, state.gameConfig.timeout * 1000, state, true);
+    bot.telegram.sendMessage(state.chatID, message, {parse_mode: "Markdown"}).finally(() => {
+        for (const player of state.players) {
+            if (player.consecutiveAusences >= state.gameConfig.ausence_tolerance) {
+                resume = kickPlayer(player.id, state);
+            }
         }
-    }
+        if (resume) {
+            serveNextQuestionOrEndGame(state);
+        }
+    });
 }
 
+/**
+ * 
+ * @param playerID 
+ * @param state 
+ * @returns true if game must continue
+ */
+function kickPlayer(playerID: number, state: GameInfo): boolean {
+    const player = state.findPlayerByID(playerID);
+    bot.telegram.sendMessage(state.chatID, `Player ${player.getPlayerLink()} kicked due to inactivity`,
+    {parse_mode: "Markdown"});
+    state.removePlayerFromID(playerID);
+    if (state.players.length === 0) {
+        endGamePrematurely(state)
+        return false;
+    }
+    return true;
+}
+
+function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
+    const buttons: Telegraf.CallbackButton[][] = [];
+    let i = 0;
+    let buttonsInCurrentLine = 0;
+    let lastArr = [];
+    buttons.push(lastArr);
+    for (const answer of ansers) {
+        if (buttonsInCurrentLine >= 2) {
+            lastArr = [];
+            buttons.push(lastArr);
+            buttonsInCurrentLine = 0;
+        }
+        lastArr.push(Telegraf.Markup.callbackButton(answer.answerText,
+            'q' + questionNumber.toString() + ':' + i.toString()));
+        i++;
+        buttonsInCurrentLine++;
+    }
+    const keyboard = Telegraf.Markup.inlineKeyboard(buttons);
+    return keyboard;
+}
 
 function makeYesNoKeyboard() {
     const keyboard = Telegraf.Markup.inlineKeyboard([
@@ -129,15 +193,19 @@ function makeYesNoKeyboard() {
     return keyboard;
 }
 
-function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
-    const buttons: Telegraf.CallbackButton[] = [];
-    let i = 0;
-    for (const answer of ansers) {
-        buttons.push(Telegraf.Markup.callbackButton(answer.answerText,
-            'q' + questionNumber.toString() + ':' + i.toString()));
-        i++;
+function serveNextQuestionOrEndGame(state: GameInfo) {
+    if (state.state === Status.PLAYING) {
+        if (state.currentQuestion + 1 === state.questionArray.length) {
+            bot.telegram.sendMessage(state.chatID, 'Game end!\n' + state.printStats(), { parse_mode: "Markdown" });
+            stateMap.delete(state.chatID);
+        } else {
+            state.currentQuestion++;
+            const question = state.questionArray[state.currentQuestion];
+            bot.telegram.sendMessage(state.chatID, 'Question⁉Category:' + question.category + '\n' + question.text, { reply_markup: makeAnswerKeyboard(question.answers, state.currentQuestion) });
+            state.lastTimeOutID = setTimeout(endQuestion, state.gameConfig.timeout * 1000, state, true);
+        }
     }
-    const keyboard = Telegraf.Markup.inlineKeyboard(buttons);
-    return keyboard;
 }
+
+
 

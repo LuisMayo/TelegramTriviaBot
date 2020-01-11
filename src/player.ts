@@ -25,6 +25,6 @@ export class Player implements User {
     }
 
     getPlayerLink() {
-        return `${this.first_name}](tg://user?id=${this.id}`;
+        return `[${this.first_name}](tg://user?id=${this.id})`;
     }
 }

@@ -3,6 +3,7 @@ import { Provider } from "./providers";
 import { URLSearchParams } from "url";
 import { Question, Answer } from "../question";
 import { knuthShuffle } from "knuth-shuffle";
+import fetch from 'cross-fetch';
 
 export interface OpenTDBResponse {
     response_code: number;
@@ -22,7 +23,7 @@ export class OpenTriviaHandler implements Provider {
     async getQuestions(gameInfo: import("../conf").GameConfig) {
         const params = new URLSearchParams();
         params.set('amount', gameInfo.totalQuestions.toString());
-        params.set('encode', 'url3986');
+        params.set('encode', 'base64');
         if (gameInfo.difficulty != null) {
             params.set('difficulty', gameInfo.difficulty);
         }
@@ -40,12 +41,12 @@ export class OpenTriviaHandler implements Provider {
     private loadQuestions(response: OpenTDBResponse) {
         return response.results.map((result, i) => {
             const question = new Question();
-            question.category = decodeURI(result.category);
-            question.text = decodeURI(result.question);
+            question.category = Buffer.from(result.category, 'base64').toString();
+            question.text = Buffer.from(result.question, 'base64').toString();
             question.answers = result.incorrect_answers.map(answer => {
-                return new Answer(decodeURI(answer), false);
+                return new Answer(Buffer.from(answer, 'base64').toString(), false);
             });
-            question.answers.push(new Answer(decodeURI(result.correct_answer), true));
+            question.answers.push(new Answer(Buffer.from(result.correct_answer, 'base64').toString(), true));
             question.type = result.type;
             if (question.type === QuestionsType.MULTIPLE) {
                 question.answers = knuthShuffle(question.answers);

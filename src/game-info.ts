@@ -17,17 +17,15 @@ export class GameInfo {
     currentQuestion: number;
     questionArray: Question[];
     lastTimeOutID: NodeJS.Timeout;
+    pendingStart = false;
     constructor(user: User, conf: GameConfig, chatID: number) {
         this.players.push(new Player(user, true));
         this.state = Status.INIT;
         this.gameConfig = conf;
-        this.currentQuestion = 0;
+        this.currentQuestion = -1;
         this.questionsDone = 0;
         this.chatID = chatID;
     }
-
-
-
 
     findPlayerByID(id: number) {
         return this.players.find(player => player.id === id);
@@ -44,6 +42,11 @@ export class GameInfo {
     isPlayerAdmin(id: number) {
         const savedPlayer = this.findPlayerByID(id);
         return savedPlayer && savedPlayer.gameAdmin;
+    }
+
+    loadQuestions(question: Question[]) {
+        this.questionArray = question;
+        this.questionsLeft = question.length;
     }
 
     printPlayerStats() {
@@ -72,7 +75,7 @@ export class GameInfo {
 
     resolveQuestion(timeout: boolean) {
         let string = timeout ? "Time's up!\n" : 'All players have now answered\n';
-        string += `The correct answer was ${this.getCurrentQuestion().getCorrectAnswer()}\n`;
+        string += `The correct answer was ${this.getCurrentQuestion().getCorrectAnswer().answerText}\n`;
         for(const player of this.players) {
             string += `User ${player.getPlayerLink()}`;
             if (this.getCurrentQuestion().isAnswerCorrect(player.lastAnswer)) {
@@ -94,6 +97,10 @@ export class GameInfo {
             string += `. Score ${player.stats.getStats()}\n`
         }
         return string;
+    }
+
+    removePlayerFromID(id: number) {
+        this.players.splice(this.players.findIndex(player => player.id === id), 1);
     }
 
     setQuestions(questions: Question[]) {

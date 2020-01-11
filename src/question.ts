@@ -14,7 +14,7 @@ export class Question {
     }
 
     isAnswerCorrect(id: number) {
-        return this.answers[id].isCorrect;
+        return id != null && this.answers[id].isCorrect;
     }
 }
 

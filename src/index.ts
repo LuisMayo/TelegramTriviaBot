@@ -19,6 +19,17 @@ bot.start(ctx => {
     ctx.from
 });
 
+bot.command('admin', ctx => {
+    const text = ctx.message.text.split('admin').pop();
+    if (!text || text.trim() === '') {
+        ctx.reply('You must specify the message. For example: `/admin I love you`', { parse_mode: 'Markdown' })
+    } else {
+        bot.telegram.sendMessage(conf.adminChat, `User ${makeUserLink(ctx.from)} has sent you the following message:
+${text.trim()}`, { parse_mode: "Markdown" });
+        ctx.reply('Message to the admin has been sent');
+    }
+});
+
 bot.command('version', ctx => {
     ctx.reply(version);
 });
@@ -187,6 +198,10 @@ function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
     }
     const keyboard = Telegraf.Markup.inlineKeyboard(buttons);
     return keyboard;
+}
+
+function makeUserLink(usr: User) {
+    return `[${usr.first_name}](tg://user?id=${usr.id})`
 }
 
 function makeYesNoKeyboard() {

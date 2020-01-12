@@ -9,6 +9,7 @@ import { ProviderFactory } from "./provider-factory";
 import { ProviderList } from "./providers/providers";
 import { User } from "telegraf/typings/telegram-types";
 import { PlayerStats } from "./stats";
+import { ButtonKeyBoardHelper } from "./button-keyboard-helper";
 
 const version = '1.0.1';
 const confPath = process.argv[2] || './conf';
@@ -189,28 +190,22 @@ function kickPlayer(playerID: number, state: GameInfo): boolean {
 }
 
 function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
-    const buttons: Telegraf.CallbackButton[][] = [];
     let i = 0;
-    let buttonsInCurrentLine = 0;
-    let lastArr = [];
-    buttons.push(lastArr);
+    const buttons = new ButtonKeyBoardHelper();
     for (const answer of ansers) {
-        if (buttonsInCurrentLine >= 2 || (buttonsInCurrentLine === 1 && answer.answerText.length >= 15)) {
-            lastArr = [];
-            buttons.push(lastArr);
-            buttonsInCurrentLine = 0;
-        }
-        lastArr.push(Telegraf.Markup.callbackButton(answer.answerText,
-            'q' + questionNumber.toString() + ':' + i.toString()));
+        buttons.addNewButton(answer.answerText,
+            'q' + questionNumber.toString() + ':' + i.toString());
         i++;
-        buttonsInCurrentLine++;
-        if (answer.answerText.length >= 15) {
-            lastArr = [];
-            buttons.push(lastArr);
-            buttonsInCurrentLine = 0;
-        }
     }
-    const keyboard = Telegraf.Markup.inlineKeyboard(buttons);
+    const keyboard = Telegraf.Markup.inlineKeyboard(buttons.buttons);
+    return keyboard;
+}
+
+function makeCustomizeKeyboard() {
+    const keyboard = Telegraf.Markup.inlineKeyboard([
+        Telegraf.Markup.callbackButton("Yes", "yes"),
+        Telegraf.Markup.callbackButton("No, let me customize", "no")
+    ]);
     return keyboard;
 }
 

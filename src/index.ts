@@ -7,6 +7,8 @@ import { Question, Answer } from "./question";
 import { Player } from "./player";
 import { ProviderFactory } from "./provider-factory";
 import { ProviderList } from "./providers/providers";
+import { User } from "telegraf/typings/telegram-types";
+import { PlayerStats } from "./stats";
 
 const version = '1.0.1';
 const confPath = process.argv[2] || './conf';
@@ -138,6 +140,13 @@ bot.action(/q\d+:\d+/, ctx => {
     }
 });
 
+process.on('SIGINT', function () {
+    saveState();
+    process.exit(0);
+});
+
+loadState();
+
 bot.launch();
 
 function endGamePrematurely(state: GameInfo) {
@@ -210,6 +219,39 @@ function makeYesNoKeyboard() {
         Telegraf.Markup.callbackButton("No, let me customize", "no")
     ]);
     return keyboard;
+}
+
+function saveState() {
+    const stateArray = Array.from(stateMap.values());
+    for (const state of stateArray) {
+        delete state.lastTimeOutID;
+    }
+    const save = JSON.stringify(stateArray);
+    fs.writeFileSync(confPath + '/state.json', save, { encoding: 'UTF-8' });
+}
+
+function loadState() {
+    try {
+        const loadArray = fs.readFileSync(confPath + '/state.json', { encoding: 'UTF-8' });
+        const array: GameInfo[] = JSON.parse(loadArray)
+        for (const state of array) {
+            const realState = Object.assign(new GameInfo(null, null, null), state);
+            for (let i=0; i < realState.players.length; i++) {
+                const fakePlayer = realState.players[i];
+                const realPlayer = Object.assign(new Player(null), fakePlayer);
+                realPlayer.stats = Object.assign(new PlayerStats(), fakePlayer.stats);
+                realState.players[i] = realPlayer;
+            }
+            for (let i=0; i < realState.questionArray.length; i++) {
+                const fakeQuestion = realState.questionArray[i];
+                const realQuestion = Object.assign(new Question(), fakeQuestion);
+                realState.questionArray[i] = realQuestion;
+            }
+            realState.lastTimeOutID = setTimeout(endQuestion,realState.gameConfig.timeout * 1000,realState, true);
+            stateMap.set(state.chatID, realState);
+        }
+    } catch (e) {
+    }
 }
 
 function serveNextQuestionOrEndGame(state: GameInfo) {

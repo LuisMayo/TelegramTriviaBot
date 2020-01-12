@@ -8,7 +8,7 @@ import { Player } from "./player";
 import { ProviderFactory } from "./provider-factory";
 import { ProviderList } from "./providers/providers";
 
-const version = '1.0.0';
+const version = '1.0.1';
 const confPath = process.argv[2] || './conf';
 const conf: Conf = JSON.parse(fs.readFileSync(confPath + '/conf.json', { encoding: 'UTF-8' }));
 const bot = new Telegraf.default(conf.token);

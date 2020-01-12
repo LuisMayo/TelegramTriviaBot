@@ -195,7 +195,7 @@ function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
     let lastArr = [];
     buttons.push(lastArr);
     for (const answer of ansers) {
-        if (buttonsInCurrentLine >= 2) {
+        if (buttonsInCurrentLine >= 2 || (buttonsInCurrentLine === 1 && answer.answerText.length >= 15)) {
             lastArr = [];
             buttons.push(lastArr);
             buttonsInCurrentLine = 0;
@@ -204,6 +204,11 @@ function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
             'q' + questionNumber.toString() + ':' + i.toString()));
         i++;
         buttonsInCurrentLine++;
+        if (answer.answerText.length >= 15) {
+            lastArr = [];
+            buttons.push(lastArr);
+            buttonsInCurrentLine = 0;
+        }
     }
     const keyboard = Telegraf.Markup.inlineKeyboard(buttons);
     return keyboard;

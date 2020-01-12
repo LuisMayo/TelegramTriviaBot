@@ -39,7 +39,7 @@ bot.command('version', ctx => {
 bot.command(['create', 'init'], ctx => {
     if (!stateMap.has(ctx.chat.id)) {
         stateMap.set(ctx.chat.id, new GameInfo(ctx.from, conf.default, ctx.chat.id));
-        ctx.reply('Do you want to use standard settings?', { reply_markup: makeYesNoKeyboard() });
+        ctx.reply('Do you like current settings?\n' + stateMap.get(ctx.chat.id).printSettings() , { reply_markup: makeYesNoKeyboard() });
     } else {
         ctx.reply('You already have an started game, may you /cancel it?')
     }
@@ -215,7 +215,7 @@ function makeUserLink(usr: User) {
 
 function makeYesNoKeyboard() {
     const keyboard = Telegraf.Markup.inlineKeyboard([
-        Telegraf.Markup.callbackButton("Yes, default settings", "yes"),
+        Telegraf.Markup.callbackButton("Yes", "yes"),
         Telegraf.Markup.callbackButton("No, let me customize", "no")
     ]);
     return keyboard;

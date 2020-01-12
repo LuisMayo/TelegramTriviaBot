@@ -49,6 +49,14 @@ export class GameInfo {
         this.questionsLeft = question.length;
     }
 
+    printAllPlayers() {
+        let string = '';
+        for (const player of this.players) {
+            string += player.getPlayerLink() + '\n';
+        }
+        return string;
+    }
+
     printPlayerStats() {
         this.players.sort((a, b) => {
             return a.stats.guessed > b.stats.guessed ? -1 : 1;
@@ -60,12 +68,12 @@ export class GameInfo {
         return string;
     }
 
-    printAllPlayers() {
-        let string = '';
-        for (const player of this.players) {
-            string += player.getPlayerLink() + '\n';
-        }
-        return string;
+    printSettings() {
+        return `Question number:${this.gameConfig.totalQuestions}\n` +
+        `Question difficulty: ${this.gameConfig.difficulty || 'All'}\n` +
+        `Question type: ${this.gameConfig.typeOfQuestions || 'All'}\n` +
+        `Time to play before timeout: ${this.gameConfig.timeout}s\n`+
+        `Timeouts before kick: ${this.gameConfig.ausence_tolerance}`
     }
 
     printStats() {

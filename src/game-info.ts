@@ -22,6 +22,7 @@ export class GameInfo {
         this.players.push(new Player(user, true));
         this.state = Status.INIT;
         this.gameConfig = conf;
+        this.gameConfig.
         this.currentQuestion = -1;
         this.questionsDone = 0;
         this.chatID = chatID;

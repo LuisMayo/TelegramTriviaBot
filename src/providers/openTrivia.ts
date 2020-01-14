@@ -24,11 +24,10 @@ export class OpenTriviaHandler implements Provider {
         const params = new URLSearchParams();
         params.set('amount', gameInfo.totalQuestions.toString());
         params.set('encode', 'base64');
-        if (gameInfo.difficulty != null) {
-            params.set('difficulty', gameInfo.difficulty);
-        }
-        if (gameInfo.difficulty != null) {
-            params.set('difficulty', gameInfo.difficulty);
+        if (gameInfo.difficulty != null && gameInfo.difficulty.length > 0) {
+            if(gameInfo.difficulty.length === 1) {
+                params.set('difficulty', gameInfo.difficulty[0]);
+            }
         }
         if (gameInfo.typeOfQuestions != null) {
             params.set('type', gameInfo.typeOfQuestions);

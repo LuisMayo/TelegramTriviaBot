@@ -1,4 +1,4 @@
-import { Conf } from "./conf";
+import { Conf, Difficulty } from "./conf";
 import * as fs from 'fs';
 import * as Telegraf from 'telegraf';
 import { GameInfo } from "./game-info";
@@ -110,9 +110,16 @@ bot.action('yes', ctx => {
 
 bot.action('no', ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).state === Status.INIT) {
-        ctx.reply("I'm so sorry, my dumb creator didn't gave me the ability to customize game yet 😓")
+        ctx.editMessageReplyMarkup(makeCustomizeKeyboard());
         ctx.answerCbQuery();
     }
+});
+
+bot.action([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD], processDifficultChange);
+
+bot.action('difficulty', ctx => {
+    if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).state === Status.INIT)
+    ctx.editMessageReplyMarkup(makeDifficultyKeyboard(stateMap.get(ctx.chat.id)));
 });
 
 bot.action(/q\d+:\d+/, ctx => {
@@ -202,11 +209,41 @@ function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
 }
 
 function makeCustomizeKeyboard() {
-    const keyboard = Telegraf.Markup.inlineKeyboard([
-        Telegraf.Markup.callbackButton("Yes", "yes"),
-        Telegraf.Markup.callbackButton("No, let me customize", "no")
-    ]);
-    return keyboard;
+    const buttons = new ButtonKeyBoardHelper();
+    buttons.addNewButton('Difficulty', 'difficulty');
+    // buttons.addNewButton('Type of questions', 'type');
+    // buttons.addNewButton('Number of questions', 'number');
+    // buttons.addNewButton('Timeout', 'timeout');
+    // buttons.addNewButton('Timeouts before quick', 'tolerance');
+    buttons.addNewButton('Use current settings', 'yes');
+    return Telegraf.Markup.inlineKeyboard(buttons.buttons);
+}
+
+function makeDifficultyKeyboard(state: GameInfo) {
+    const buttons = new ButtonKeyBoardHelper();
+    buttons.addNewButton(hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌' + ' Easy', Difficulty.EASY);
+    buttons.addNewButton(hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌' +' Medium', Difficulty.MEDIUM);
+    buttons.addNewButton(hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌' +' Hard', Difficulty.HARD);
+    buttons.addNewButton('Back to settings', 'no');
+    return Telegraf.Markup.inlineKeyboard(buttons.buttons);
+}
+
+function processDifficultChange(ctx: Telegraf.ContextMessageUpdate) {
+    if (stateMap.has(ctx.chat.id)){
+        const state = stateMap.get(ctx.chat.id);
+        if (state.isPlayerAdmin(ctx.from.id)) {
+            if (hasDifficulty(state, <Difficulty>ctx.callbackQuery.data) && state.gameConfig.difficulty && state.gameConfig.difficulty.length > 0) {
+                state.gameConfig.difficulty.splice(state.gameConfig.difficulty.findIndex(diff => diff === ctx.callbackQuery.data), 1);
+            } else {
+                state.gameConfig.difficulty[0] = (<Difficulty>ctx.callbackQuery.data);
+            }
+            ctx.editMessageText(state.printSettings(), {reply_markup: makeDifficultyKeyboard(state)});
+        }
+    }
+}
+
+function hasDifficulty(state: GameInfo, diff: Difficulty) {
+    return !state.gameConfig.difficulty || state.gameConfig.difficulty.length === 0 || state.gameConfig.difficulty.includes(diff);
 }
 
 function makeUserLink(usr: User) {

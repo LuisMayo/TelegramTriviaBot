@@ -41,6 +41,9 @@ bot.command(['create', 'init'], ctx => {
     if (!stateMap.has(ctx.chat.id)) {
         stateMap.set(ctx.chat.id, new GameInfo(ctx.from, conf.default, ctx.chat.id));
         ctx.reply('Do you like current settings?\n' + stateMap.get(ctx.chat.id).printSettings() , { reply_markup: makeYesNoKeyboard() });
+        if (conf.extendedLog) {
+            bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has created a session", { parse_mode: 'Markdown' });
+        }
     } else {
         ctx.reply('You already have an started game, may you /cancel it?')
     }
@@ -67,6 +70,9 @@ bot.command('join', ctx => {
 bot.command(['/cancel', '/stop'], ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id)) {
         endGamePrematurely(stateMap.get(ctx.chat.id));
+        if (conf.extendedLog) {
+            bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has aborted a session", { parse_mode: 'Markdown' });
+        }
     }
 });
 
@@ -76,6 +82,9 @@ bot.command('launch', ctx => {
         if (state.state === Status.PAUSED) {
             state.state = Status.PLAYING;
             serveNextQuestionOrEndGame(state);
+            if (conf.extendedLog) {
+                bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has started the game", { parse_mode: 'Markdown' });
+            }
         } else if (state.state === Status.PENDING) {
             state.pendingStart = true;
         }

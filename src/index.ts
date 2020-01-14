@@ -221,9 +221,9 @@ function makeCustomizeKeyboard() {
 
 function makeDifficultyKeyboard(state: GameInfo) {
     const buttons = new ButtonKeyBoardHelper();
-    buttons.addNewButton(hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌' + ' Easy', Difficulty.EASY);
-    buttons.addNewButton(hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌' +' Medium', Difficulty.MEDIUM);
-    buttons.addNewButton(hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌' +' Hard', Difficulty.HARD);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌') + ' Easy', Difficulty.EASY);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌') +' Medium', Difficulty.MEDIUM);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌') +' Hard', Difficulty.HARD);
     buttons.addNewButton('Back to settings', 'no');
     return Telegraf.Markup.inlineKeyboard(buttons.buttons);
 }

@@ -8,7 +8,7 @@
     "default": {
         "totalQuestions": 10,
         "typeOfQuestions": null,
-        "difficulty": null,
+        "difficulty": [],
         "timeout": 60,
         "ausence_tolerance": 1
     }

@@ -48,7 +48,9 @@ bot.command('send', (ctx) => {
 
 bot.command(['create', 'init'], ctx => {
     if (!stateMap.has(ctx.chat.id)) {
-        stateMap.set(ctx.chat.id, new GameInfo(ctx.from, conf.default, ctx.chat.id));
+        const setConf = Object.assign({}, conf.default);
+        setConf.difficulty = conf.default.difficulty.slice();
+        stateMap.set(ctx.chat.id, new GameInfo(ctx.from, setConf, ctx.chat.id));
         ctx.reply('Do you like current settings?\n' + stateMap.get(ctx.chat.id).printSettings() , { reply_markup: makeYesNoKeyboard() });
     } else {
         ctx.reply('You already have an started game, may you /cancel it?')

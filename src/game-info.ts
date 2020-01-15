@@ -70,7 +70,7 @@ export class GameInfo {
 
     printSettings() {
         return `Question number:${this.gameConfig.totalQuestions}\n` +
-        `Question difficulty: ${this.gameConfig.difficulty || 'All'}\n` +
+        `Question difficulty: ${this.gameConfig.difficulty && this.gameConfig.difficulty.length > 0 ? this.gameConfig.difficulty : 'All'}\n` +
         `Question type: ${this.gameConfig.typeOfQuestions || 'All'}\n` +
         `Time to play before timeout: ${this.gameConfig.timeout}s\n`+
         `Timeouts before kick: ${this.gameConfig.ausence_tolerance}`

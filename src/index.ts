@@ -1,4 +1,4 @@
-import { Conf, Difficulty } from "./conf";
+import { Conf, Difficulty, QuestionsType } from "./conf";
 import * as fs from 'fs';
 import * as Telegraf from 'telegraf';
 import { GameInfo } from "./game-info";
@@ -41,7 +41,7 @@ bot.command('send', (ctx) => {
     if (ctx.chat.id === +conf.adminChat) {
         let args = ctx.message.text.split(' ');
         bot.telegram.sendMessage(args[1], 'Message from bot admin: ' + args.slice(2).join(' ') + '\nYou can answer to them using /admin your message').then(mess => {
-            ctx.reply('Message sent proprerly')
+            ctx.reply('Message sent proprerly');
         });
     }
 });
@@ -125,10 +125,16 @@ bot.action('no', ctx => {
 });
 
 bot.action([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD], processDifficultChange);
+bot.action([QuestionsType.SIMPLE, QuestionsType.MULTIPLE], proccessStateChange);
 
 bot.action('difficulty', ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).state === Status.INIT)
     ctx.editMessageReplyMarkup(makeDifficultyKeyboard(stateMap.get(ctx.chat.id)));
+});
+
+bot.action('type', ctx => {
+    if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).state === Status.INIT)
+    ctx.editMessageReplyMarkup(makeTypeKeyboard(stateMap.get(ctx.chat.id)));
 });
 
 bot.action(/q\d+:\d+/, ctx => {
@@ -220,7 +226,7 @@ function makeAnswerKeyboard(ansers: Answer[], questionNumber: number) {
 function makeCustomizeKeyboard() {
     const buttons = new ButtonKeyBoardHelper();
     buttons.addNewButton('Difficulty', 'difficulty');
-    // buttons.addNewButton('Type of questions', 'type');
+    buttons.addNewButton('Type of questions', 'type');
     // buttons.addNewButton('Number of questions', 'number');
     // buttons.addNewButton('Timeout', 'timeout');
     // buttons.addNewButton('Timeouts before quick', 'tolerance');
@@ -230,9 +236,17 @@ function makeCustomizeKeyboard() {
 
 function makeDifficultyKeyboard(state: GameInfo) {
     const buttons = new ButtonKeyBoardHelper();
-    buttons.addNewButton(hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌' + ' Easy', Difficulty.EASY);
-    buttons.addNewButton(hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌' +' Medium', Difficulty.MEDIUM);
-    buttons.addNewButton(hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌' +' Hard', Difficulty.HARD);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌') + ' Easy', Difficulty.EASY);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌') +' Medium', Difficulty.MEDIUM);
+    buttons.addNewButton((hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌') +' Hard', Difficulty.HARD);
+    buttons.addNewButton('Back to settings', 'no');
+    return Telegraf.Markup.inlineKeyboard(buttons.buttons);
+}
+
+function makeTypeKeyboard(state: GameInfo) {
+    const buttons = new ButtonKeyBoardHelper();
+    buttons.addNewButton((state.gameConfig.typeOfQuestions === QuestionsType.SIMPLE || state.gameConfig.typeOfQuestions == null ? '✔' : '❌') + ' True/False', QuestionsType.SIMPLE);
+    buttons.addNewButton((state.gameConfig.typeOfQuestions === QuestionsType.MULTIPLE || state.gameConfig.typeOfQuestions == null ? '✔' : '❌') + ' Multiple Choice', QuestionsType.MULTIPLE);
     buttons.addNewButton('Back to settings', 'no');
     return Telegraf.Markup.inlineKeyboard(buttons.buttons);
 }
@@ -247,6 +261,20 @@ function processDifficultChange(ctx: Telegraf.ContextMessageUpdate) {
                 state.gameConfig.difficulty[0] = (<Difficulty>ctx.callbackQuery.data);
             }
             ctx.editMessageText(state.printSettings(), {reply_markup: makeDifficultyKeyboard(state)});
+        }
+    }
+}
+
+function proccessStateChange(ctx: Telegraf.ContextMessageUpdate) {
+    if (stateMap.has(ctx.chat.id)){
+        const state = stateMap.get(ctx.chat.id);
+        if (state.isPlayerAdmin(ctx.from.id)) {
+            if (state.gameConfig.typeOfQuestions == null || state.gameConfig.typeOfQuestions !== ctx.callbackQuery.data) {
+                state.gameConfig.typeOfQuestions = ctx.callbackQuery.data as QuestionsType;
+            } else {
+                state.gameConfig.typeOfQuestions = null;
+            }
+            ctx.editMessageText(state.printSettings(), {reply_markup: makeTypeKeyboard(state)});
         }
     }
 }

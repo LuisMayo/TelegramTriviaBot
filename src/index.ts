@@ -37,13 +37,17 @@ bot.command('version', ctx => {
     ctx.reply(version);
 });
 
+bot.command('send', (ctx) => {
+    if (ctx.chat.id === +conf.adminChat) {
+        let args = ctx.message.text.split(' ');
+        bot.telegram.sendMessage(args[1], 'Message from bot admin: ' + args.slice(2).join(' ') + '\nYou can answer to them using /admin your message');
+    }
+});
+
 bot.command(['create', 'init'], ctx => {
     if (!stateMap.has(ctx.chat.id)) {
         stateMap.set(ctx.chat.id, new GameInfo(ctx.from, conf.default, ctx.chat.id));
         ctx.reply('Do you like current settings?\n' + stateMap.get(ctx.chat.id).printSettings() , { reply_markup: makeYesNoKeyboard() });
-        if (conf.extendedLog) {
-            bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has created a session", { parse_mode: 'Markdown' });
-        }
     } else {
         ctx.reply('You already have an started game, may you /cancel it?')
     }
@@ -70,9 +74,6 @@ bot.command('join', ctx => {
 bot.command(['/cancel', '/stop'], ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id)) {
         endGamePrematurely(stateMap.get(ctx.chat.id));
-        if (conf.extendedLog) {
-            bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has aborted a session", { parse_mode: 'Markdown' });
-        }
     }
 });
 
@@ -82,9 +83,6 @@ bot.command('launch', ctx => {
         if (state.state === Status.PAUSED) {
             state.state = Status.PLAYING;
             serveNextQuestionOrEndGame(state);
-            if (conf.extendedLog) {
-                bot.telegram.sendMessage(conf.adminChat, "User " + makeUserLink(ctx.from) + " has started the game", { parse_mode: 'Markdown' });
-            }
         } else if (state.state === Status.PENDING) {
             state.pendingStart = true;
         }
@@ -230,9 +228,9 @@ function makeCustomizeKeyboard() {
 
 function makeDifficultyKeyboard(state: GameInfo) {
     const buttons = new ButtonKeyBoardHelper();
-    buttons.addNewButton((hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌') + ' Easy', Difficulty.EASY);
-    buttons.addNewButton((hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌') +' Medium', Difficulty.MEDIUM);
-    buttons.addNewButton((hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌') +' Hard', Difficulty.HARD);
+    buttons.addNewButton(hasDifficulty(state, Difficulty.EASY) ? '✔' : '❌' + ' Easy', Difficulty.EASY);
+    buttons.addNewButton(hasDifficulty(state, Difficulty.MEDIUM) ? '✔' : '❌' +' Medium', Difficulty.MEDIUM);
+    buttons.addNewButton(hasDifficulty(state, Difficulty.HARD) ? '✔' : '❌' +' Hard', Difficulty.HARD);
     buttons.addNewButton('Back to settings', 'no');
     return Telegraf.Markup.inlineKeyboard(buttons.buttons);
 }

@@ -40,7 +40,9 @@ bot.command('version', ctx => {
 bot.command('send', (ctx) => {
     if (ctx.chat.id === +conf.adminChat) {
         let args = ctx.message.text.split(' ');
-        bot.telegram.sendMessage(args[1], 'Message from bot admin: ' + args.slice(2).join(' ') + '\nYou can answer to them using /admin your message');
+        bot.telegram.sendMessage(args[1], 'Message from bot admin: ' + args.slice(2).join(' ') + '\nYou can answer to them using /admin your message').then(mess => {
+            ctx.reply('Message sent proprerly')
+        });
     }
 });
 

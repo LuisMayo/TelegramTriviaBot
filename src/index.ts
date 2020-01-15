@@ -321,7 +321,9 @@ function loadState() {
                 const realQuestion = Object.assign(new Question(), fakeQuestion);
                 realState.questionArray[i] = realQuestion;
             }
-            realState.lastTimeOutID = setTimeout(endQuestion,realState.gameConfig.timeout * 1000,realState, true);
+            if (realState.state === Status.PLAYING) {
+                realState.lastTimeOutID = setTimeout(endQuestion,realState.gameConfig.timeout * 1000, realState, true);
+            }
             stateMap.set(state.chatID, realState);
         }
     } catch (e) {

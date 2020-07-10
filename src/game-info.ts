@@ -82,6 +82,7 @@ export class GameInfo {
     }
 
     resolveQuestion(timeout: boolean) {
+	this.questionsDone++;
         let string = timeout ? "Time's up!\n" : 'All players have now answered\n';
         string += `The correct answer was ${this.getCurrentQuestion().getCorrectAnswer().answerText}\n`;
         for(const player of this.players) {

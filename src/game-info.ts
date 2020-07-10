@@ -77,8 +77,8 @@ export class GameInfo {
     }
 
     printStats() {
-        return `Done Questions: ${this.questionsDone} of a total of ${this.gameConfig.totalQuestions}
-        ${this.printPlayerStats()}`
+        return `Done Questions: ${this.questionsDone} of a total of ${this.gameConfig.totalQuestions}\n`+
+        `${this.printPlayerStats()}`
     }
 
     resolveQuestion(timeout: boolean) {

@@ -104,7 +104,7 @@ bot.action('yes', ctx => {
         const state = stateMap.get(ctx.chat.id);
         state.state = Status.PENDING;
         ctx.reply('Alrighty then, use the /launch command when everybody is aboard (Tip: Players may join using /join at every moment, including during gameplay)');
-        // TODO lmayo consultar API aquí
+        ctx.editMessageReplyMarkup(); // We delete the inline keyboard
         const provider = ProviderFactory.getProvider(ProviderList.TRIVIADB);
         provider.getQuestions(state.gameConfig).then(
             data => {

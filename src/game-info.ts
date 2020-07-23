@@ -77,11 +77,12 @@ export class GameInfo {
     }
 
     printStats() {
-        return `Done Questions: ${this.questionsDone} of a total of ${this.gameConfig.totalQuestions}
-        ${this.printPlayerStats()}`
+        return `Done Questions: ${this.questionsDone} of a total of ${this.gameConfig.totalQuestions}\n`+
+        `${this.printPlayerStats()}`
     }
 
     resolveQuestion(timeout: boolean) {
+	this.questionsDone++;
         let string = timeout ? "Time's up!\n" : 'All players have now answered\n';
         string += `The correct answer was ${this.getCurrentQuestion().getCorrectAnswer().answerText}\n`;
         for(const player of this.players) {

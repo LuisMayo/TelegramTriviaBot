@@ -11,5 +11,6 @@
         "difficulty": [],
         "timeout": 60,
         "ausence_tolerance": 1
-    }
+    },
+    "debugMode": false
 }

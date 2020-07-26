@@ -12,6 +12,7 @@ export class Player implements User {
     stats: PlayerStats;
     lastAnswer: number;
     consecutiveAusences: number;
+
     constructor(user: User, admin = false, unanswered = 0) {
         Object.assign(this, user);
         this.gameAdmin = admin;

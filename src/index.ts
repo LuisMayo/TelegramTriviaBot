@@ -57,21 +57,13 @@ bot.command(['create', 'init'], ctx => {
     }
 });
 
-bot.command('join', ctx => {
-    if (stateMap.has(ctx.chat.id)) {
-        const state = stateMap.get(ctx.chat.id);
-        if (state.findPlayerByID(ctx.from.id)) {
-            ctx.reply('Player is already in game');
-        } else {
-            const player = new Player(ctx.from);
-            state.players.push(player);
-            ctx.reply('Player ' + player.getPlayerLink() + ' has joined the game\nPlayer List:\n' + state.printAllPlayers(), { parse_mode: "Markdown" });
-            if (state.state === Status.PLAYING) {
-                player.stats.unanswered = state.currentQuestion;
-            }
-        }
-    } else {
-        ctx.reply('There is no game in progress. You may want to use /create to make one');
+bot.command('join', playerJoin);
+bot.command('joinMock', ctx => {
+    if (conf.debugMode) {
+        const now = Date.now();
+        ctx.from.first_name = 'DUMMY' + now;
+        ctx.from.id = now;
+        playerJoin(ctx);
     }
 });
 
@@ -173,6 +165,26 @@ process.on('SIGINT', function () {
 loadState();
 
 bot.launch();
+
+function playerJoin(ctx: Telegraf.ContextMessageUpdate) {
+    if (stateMap.has(ctx.chat.id)) {
+        const state = stateMap.get(ctx.chat.id);
+        if (state.findPlayerByID(ctx.from.id)) {
+            ctx.reply('Player is already in game');
+        }
+        else {
+            const player = new Player(ctx.from);
+            state.players.push(player);
+            ctx.reply('Player ' + player.getPlayerLink() + ' has joined the game\nPlayer List:\n' + state.printAllPlayers(), { parse_mode: "Markdown" });
+            if (state.state === Status.PLAYING) {
+                player.stats.unanswered = state.currentQuestion;
+            }
+        }
+    }
+    else {
+        ctx.reply('There is no game in progress. You may want to use /create to make one');
+    }
+}
 
 function endGamePrematurely(state: GameInfo) {
     bot.telegram.sendMessage(state.chatID, 'Game ended prematurely\n' + state.printStats(), { parse_mode: "Markdown" });

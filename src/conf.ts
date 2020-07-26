@@ -13,7 +13,8 @@ export type Conf = {
     messages: {
         start: string;
     },
-    default: GameConfig
+    default: GameConfig;
+    debugMode: boolean;
 };
 
 export enum QuestionsType {

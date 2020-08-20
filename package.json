@@ -24,7 +24,8 @@
   "dependencies": {
     "cross-fetch": "^3.0.4",
     "knuth-shuffle": "^1.0.8",
-    "telegraf": "^3.35.0"
+    "telegraf": "^3.35.0",
+    "typescript": "^4.0.2"
   },
   "devDependencies": {
     "@types/knuth-shuffle": "^1.0.0",

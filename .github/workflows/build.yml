@@ -23,5 +23,3 @@ jobs:
         run: npm ci
       - name: Compile TypeScript
         uses: icrawl/action-tsc@v1
-        with:
-          build: src

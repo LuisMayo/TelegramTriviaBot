@@ -87,7 +87,7 @@ bot.command('launch', ctx => {
 
 bot.command('leave', ctx => {
     if (stateMap.has(ctx.chat.id)) {
-        kickPlayer(ctx.from.id, stateMap.get(ctx.chat.id));
+        kickPlayer(ctx.from.id, stateMap.get(ctx.chat.id), true);
     }
 });
 
@@ -136,19 +136,16 @@ bot.action(/q\d+:\d+/, ctx => {
         const cbQuery = ctx.callbackQuery.data;
         const state = stateMap.get(ctx.chat.id);
         if (+cbQuery.substring(1, cbQuery.indexOf(':')) === state.currentQuestion) {
-            const player = state.findPlayerByID(ctx.from.id);
-            if (player) {
-                player.lastAnswer = +cbQuery.substring(cbQuery.indexOf(':') + 1);
-                if (state.haveAllPlayersAnswered()) {
-                    clearTimeout(state.lastTimeOutID);
-                    endQuestion(state, false);
-                }
-                ctx.answerCbQuery('Response registered');
-            } else {
-                ctx.reply(`I'm terribly sorry ${ctx.from.first_name}](tg://user?id=${ctx.from.id}) but you're not on this game. You may join with /join`,
-                    { parse_mode: "Markdown", reply_to_message_id: ctx.message.message_id });
-                ctx.answerCbQuery();
+            let player = state.findPlayerByID(ctx.from.id);
+            if (!player) {
+                player = playerJoin(ctx);
             }
+            player.lastAnswer = +cbQuery.substring(cbQuery.indexOf(':') + 1);
+            if (state.haveAllPlayersAnswered()) {
+                clearTimeout(state.lastTimeOutID);
+                endQuestion(state, false);
+            }
+            ctx.answerCbQuery('Response registered');
         } else {
             ctx.answerCbQuery('That question has already finished');
         }
@@ -179,6 +176,7 @@ function playerJoin(ctx: Telegraf.ContextMessageUpdate) {
             if (state.state === Status.PLAYING) {
                 player.stats.unanswered = state.currentQuestion;
             }
+            return player;
         }
     }
     else {
@@ -213,10 +211,15 @@ function endQuestion(state: GameInfo, timeOut: boolean) {
  * @param state 
  * @returns true if game must continue
  */
-function kickPlayer(playerID: number, state: GameInfo): boolean {
+function kickPlayer(playerID: number, state: GameInfo, volunteer = false): boolean {
     const player = state.findPlayerByID(playerID);
-    bot.telegram.sendMessage(state.chatID, `Player ${player.getPlayerLink()} kicked due to inactivity`,
+    if (volunteer) {
+        bot.telegram.sendMessage(state.chatID, `Player ${player.getPlayerLink()} has left the game`,
         { parse_mode: "Markdown" });
+    } else {
+        bot.telegram.sendMessage(state.chatID, `Player ${player.getPlayerLink()} kicked due to inactivity`,
+        { parse_mode: "Markdown" });
+    }
     state.removePlayerFromID(playerID);
     if (state.players.length === 0) {
         endGamePrematurely(state)

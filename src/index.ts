@@ -1,16 +1,3 @@
-import { Conf, Difficulty, QuestionsType } from "./conf";
-import * as fs from 'fs';
-import * as Telegraf from 'telegraf';
-import { GameInfo } from "./game-info";
-import { Status } from "./status";
-import { Question, Answer } from "./question";
-import { Player } from "./player";
-import { ProviderFactory } from "./provider-factory";
-import { ProviderList } from "./providers/providers";
-import { User } from "telegraf/typings/telegram-types";
-import { PlayerStats } from "./stats";
-import { ButtonKeyBoardHelper } from "./button-keyboard-helper";
-
 const version = '1.0.1';
 const confPath = process.argv[2] || './conf';
 const conf: Conf = JSON.parse(fs.readFileSync(confPath + '/conf.json', { encoding: 'UTF-8' }));

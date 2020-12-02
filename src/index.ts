@@ -32,6 +32,7 @@ ${text.trim()}`, { parse_mode: "Markdown" });
     }
 });
 
+bot.command('about', ctx => ctx.reply('Bot made with ❤ by @TLuigi003. Check it out on its Github page: https://github.com/LuisMayo/TelegramTriviaBot'));
 
 bot.command('send', (ctx) => {
     if (ctx.chat.id === +conf.adminChat) {

@@ -50,7 +50,7 @@ bot.command(['create', 'init'], ctx => {
         stateMap.set(ctx.chat.id, new GameInfo(ctx.from, setConf, ctx.chat.id));
         ctx.reply('Do you like current settings?\n' + stateMap.get(ctx.chat.id).printSettings() , { reply_markup: makeYesNoKeyboard() });
     } else {
-        ctx.reply('You already have an started game, may you /cancel it?')
+        ctx.reply('You already have an started game, may you /stop it?')
     }
 });
 
@@ -64,11 +64,20 @@ bot.command('joinMock', ctx => {
     }
 });
 
-bot.command(['/cancel', '/stop'], ctx => {
+bot.command('/stop', ctx => {
     if (stateMap.has(ctx.chat.id) && stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id)) {
         endGamePrematurely(stateMap.get(ctx.chat.id));
     }
 });
+
+bot.command('/cancel', ctx => {
+    if (stateMap.has(ctx.chat.id) &&
+        stateMap.get(ctx.chat.id).isPlayerAdmin(ctx.from.id) &&
+        [Status.CONFIGCATHEGORYADD, Status.CONFIGCATHEGORYREMOVE, Status.CONFIGKICKTOLERANCE, Status.CONFIGQUESTIONNUMBER, Status.CONFIGTIMEOUT].includes(stateMap.get(ctx.chat.id).state)) {
+            stateMap.get(ctx.chat.id).state = Status.INIT;
+    }
+});
+
 
 bot.command('launch', ctx => {
     if (stateMap.has(ctx.chat.id)) {
@@ -241,7 +250,7 @@ function makeCustomizeKeyboard() {
     const buttons = new ButtonKeyBoardHelper();
     buttons.addNewButton('Difficulty', 'difficulty');
     buttons.addNewButton('Type of questions', 'type');
-    // buttons.addNewButton('Number of questions', 'number');
+    buttons.addNewButton('Number of questions', 'number');
     // buttons.addNewButton('Timeout', 'timeout');
     // buttons.addNewButton('Timeouts before quick', 'tolerance');
     buttons.addNewButton('Use current settings', 'yes');
@@ -263,6 +272,10 @@ function makeTypeKeyboard(state: GameInfo) {
     buttons.addNewButton((state.gameConfig.typeOfQuestions === QuestionsType.MULTIPLE || state.gameConfig.typeOfQuestions == null ? '✔' : '❌') + ' Multiple Choice', QuestionsType.MULTIPLE);
     buttons.addNewButton('Back to settings', 'no');
     return Telegraf.Markup.inlineKeyboard(buttons.buttons);
+}
+
+function processNumber(state: GameInfo) {
+    state.state = Status.CONFIGQUESTIONNUMBER;
 }
 
 function processDifficultChange(ctx: Telegraf.Context) {

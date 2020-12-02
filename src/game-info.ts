@@ -1,12 +1,8 @@
 import { Status } from "./status";
 import { Player } from "./player";
-import { User } from "telegram-typings";
-import { GameConfig, QuestionsType } from "./conf";
-import { Question, Answer } from "./question";
-import { OpenTDBResponse } from "./providers/openTrivia";
-import { ProviderList } from "./providers/providers";
-import { knuthShuffle } from "knuth-shuffle";
-
+import { Message, User } from "telegram-typings";
+import { GameConfig } from "./conf";
+import { Question } from "./question";
 export class GameInfo {
     chatID: number;
     state: Status
@@ -17,6 +13,7 @@ export class GameInfo {
     currentQuestion: number;
     questionArray: Question[];
     lastTimeOutID: NodeJS.Timeout;
+    lastMessage: Message;
     pendingStart = false;
     constructor(user: User, conf: GameConfig, chatID: number) {
         this.players.push(new Player(user, true));

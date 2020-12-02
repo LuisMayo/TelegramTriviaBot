@@ -193,6 +193,7 @@ function endGamePrematurely(state: GameInfo) {
 function endQuestion(state: GameInfo, timeOut: boolean) {
     let resume = true;
     const message = state.resolveQuestion(timeOut);
+    bot.telegram.editMessageReplyMarkup(state.chatID, state.lastMessage.message_id);
     bot.telegram.sendMessage(state.chatID, message, { parse_mode: "Markdown" }).then(() => {
         for (const player of state.players) { // Checks if we have kicked all the players, so we musn't continue the game
             if (player.consecutiveAusences >= state.gameConfig.ausence_tolerance) {
@@ -355,7 +356,8 @@ function serveNextQuestionOrEndGame(state: GameInfo) {
         } else {
             state.currentQuestion++;
             const question = state.questionArray[state.currentQuestion];
-            bot.telegram.sendMessage(state.chatID, 'Question⁉Category:' + question.category + '\n' + question.text, { reply_markup: makeAnswerKeyboard(question.answers, state.currentQuestion) });
+            bot.telegram.sendMessage(state.chatID, 'Question⁉Category:' + question.category + '\n' + question.text, { reply_markup: makeAnswerKeyboard(question.answers, state.currentQuestion) })
+            .then(message => state.lastMessage = message);
             state.lastTimeOutID = setTimeout(endQuestion, state.gameConfig.timeout * 1000, state, true);
         }
     }

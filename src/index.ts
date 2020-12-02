@@ -11,7 +11,6 @@ import { User } from "telegraf/typings/telegram-types";
 import { PlayerStats } from "./stats";
 import { ButtonKeyBoardHelper } from "./button-keyboard-helper";
 
-const version = '1.0.0';
 const confPath = process.argv[2] || './conf';
 const conf: Conf = JSON.parse(fs.readFileSync(confPath + '/conf.json', { encoding: 'UTF-8' }));
 const bot = new Telegraf.default(conf.token);
@@ -33,9 +32,6 @@ ${text.trim()}`, { parse_mode: "Markdown" });
     }
 });
 
-bot.command('version', ctx => {
-    ctx.reply(version);
-});
 
 bot.command('send', (ctx) => {
     if (ctx.chat.id === +conf.adminChat) {

@@ -194,7 +194,7 @@ function endQuestion(state: GameInfo, timeOut: boolean) {
     let resume = true;
     const message = state.resolveQuestion(timeOut);
     bot.telegram.sendMessage(state.chatID, message, { parse_mode: "Markdown" }).then(() => {
-        for (const player of state.players) {
+        for (const player of state.players) { // Checks if we have kicked all the players, so we musn't continue the game
             if (player.consecutiveAusences >= state.gameConfig.ausence_tolerance) {
                 resume = kickPlayer(player.id, state);
             }

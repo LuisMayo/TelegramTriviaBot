@@ -57,7 +57,7 @@ bot.command(['create', 'init'], ctx => {
     }
 });
 
-bot.command('join', playerJoin);
+bot.command('join', (ctx) => {playerJoin(ctx)});
 bot.command('joinMock', ctx => {
     if (conf.debugMode) {
         const now = Date.now();
@@ -163,7 +163,7 @@ loadState();
 
 bot.launch();
 
-function playerJoin(ctx: Telegraf.ContextMessageUpdate) {
+function playerJoin(ctx: Telegraf.Context) {
     if (stateMap.has(ctx.chat.id)) {
         const state = stateMap.get(ctx.chat.id);
         if (state.findPlayerByID(ctx.from.id)) {
@@ -268,7 +268,7 @@ function makeTypeKeyboard(state: GameInfo) {
     return Telegraf.Markup.inlineKeyboard(buttons.buttons);
 }
 
-function processDifficultChange(ctx: Telegraf.ContextMessageUpdate) {
+function processDifficultChange(ctx: Telegraf.Context) {
     if (stateMap.has(ctx.chat.id)){
         const state = stateMap.get(ctx.chat.id);
         if (state.isPlayerAdmin(ctx.from.id)) {
@@ -282,7 +282,7 @@ function processDifficultChange(ctx: Telegraf.ContextMessageUpdate) {
     }
 }
 
-function proccessStateChange(ctx: Telegraf.ContextMessageUpdate) {
+function proccessStateChange(ctx: Telegraf.Context) {
     if (stateMap.has(ctx.chat.id)){
         const state = stateMap.get(ctx.chat.id);
         if (state.isPlayerAdmin(ctx.from.id)) {

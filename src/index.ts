@@ -32,7 +32,7 @@ ${text.trim()}`, { parse_mode: "Markdown" });
     }
 });
 
-bot.command('about', ctx => ctx.reply('Bot made with ❤ by @TLuigi003. Check it out on its Github page: https://github.com/LuisMayo/TelegramTriviaBot'));
+bot.command('about', ctx => ctx.reply('Bot made with ❤ by @TLuigi003. Check it out on its Github page: https://github.com/LuisMayo/TelegramTriviaBot\n\nDo you like my work? You could thank me by buying me a [ko-fi](https://ko-fi.com/luismayo)', {parse_mode: 'Markdown'}));
 
 bot.command('send', (ctx) => {
     if (ctx.chat.id === +conf.adminChat) {

@@ -12,7 +12,7 @@ import { PlayerStats } from "./stats";
 import { ButtonKeyBoardHelper } from "./button-keyboard-helper";
 
 const confPath = process.argv[2] || './conf';
-const conf: Conf = JSON.parse(fs.readFileSync(confPath + '/conf.json', { encoding: 'UTF-8' }));
+const conf: Conf = JSON.parse(process.env.conf);
 const bot = new Telegraf.default(conf.token);
 const stateMap = new Map<number, GameInfo>();
 
